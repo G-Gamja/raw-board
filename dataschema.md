@@ -43,3 +43,5 @@ nest js, mysql, knex
 https://blog.naver.com/gi_balja/223069730719
 
 // JWT인증 : https://develop-const.tistory.com/23
+
+최종: https://charming-kyu.tistory.com/39

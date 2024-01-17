@@ -1,5 +1,6 @@
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { AuthenticationModule } from './auth/auth.mudule';
 import { CommentModule } from './comment/comment.module';
 import { KnexModule } from 'nest-knexjs';
 import { Module } from '@nestjs/common';
@@ -22,6 +23,7 @@ import { UserModule } from './user/user.module';
     }),
     UserModule,
     CommentModule,
+    AuthenticationModule,
     PostModule,
   ],
   controllers: [AppController],
