@@ -1,4 +1,12 @@
-import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthenticationService } from './auth.service';
 import { RegisterAuthDto } from './dto/register-auth.dto';
 import { LocalAuthenticationGuard } from './local/localAuth.guard';
@@ -11,6 +19,7 @@ export class AuthenticationController {
   constructor(private readonly authenticationService: AuthenticationService) {}
 
   @Post('register')
+  // TODO 바디 데이터 벨리데이션 필요.해킹구문방지..리서치 sql injection
   async register(@Body() registrationData: RegisterAuthDto) {
     return this.authenticationService.register(registrationData);
   }
@@ -24,15 +33,17 @@ export class AuthenticationController {
   // NOTE => passport미들웨어에서 user데이터를 넘겨주는데 이 데이터가 request객체에 담겨서 넘어온다
   async logIn(@Req() request: RequestWithUser, @Res() response: Response) {
     const user = request.user;
+    // NOTE RequestWithUser대신에 그냥 Request로 쓰되 request.body로 접근하시면 된다
 
     const cookie = this.authenticationService.getCookieWithJwtToken(user.id);
 
+    // TODO 갱신전략 고려하기> 추후에
     response.setHeader('Set-Cookie', cookie);
 
     user.password = undefined;
     return response.send(user);
   }
-
+  // TODO 프론트는 정렬기능도 추가.
   @UseGuards(JwtAuthGuard)
   @Post('log-out')
   async logOut(@Res() response: Response) {
@@ -41,5 +52,14 @@ export class AuthenticationController {
       this.authenticationService.getCookieForLogOut(),
     );
     return response.sendStatus(200);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get()
+  authenticate(@Req() request: RequestWithUser) {
+    const user = request.user;
+
+    user.password = undefined;
+    return user;
   }
 }
