@@ -23,9 +23,9 @@ export class UserService {
   }
 
   async findAll() {
-    const aa = await this.knex.raw('select * from Users');
+    const response = await this.knex.raw('select * from Users');
 
-    return { data: aa[0] };
+    return { data: response[0] };
   }
 
   async findOneById(id: number) {
@@ -48,6 +48,7 @@ export class UserService {
   }
 
   // NOTE later
+  // NOTE 플래그까지 고려 필요
   // remove(id: number) {
   //   return `This action removes a #${id} user`;
   // }

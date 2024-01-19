@@ -9,17 +9,19 @@ export class PostService {
   constructor(@InjectConnection() private readonly knex: Knex) {}
 
   async create(createPostDto: CreatePostDto) {
-    const aa = await this.knex.raw(
-      `INSERT INTO Users (id, title, content) VALUES ('${createPostDto.userId}', '${createPostDto.title}', '${createPostDto.content}')`,
+    const response = await this.knex.raw(
+      `INSERT INTO Posts (user_id, title, content) VALUES ('${createPostDto.user_id}', '${createPostDto.title}', '${createPostDto.content}')`,
     );
 
-    if (aa[0].affectedRows === 1) {
+    if (response[0].affectedRows === 1) {
       return { data: 'SUCCESS' };
     }
   }
 
-  findAll() {
-    return `This action returns all post`;
+  async findAll() {
+    const response = await this.knex.raw('select * from Posts');
+
+    return { data: response[0] };
   }
 
   // currentPage: number = 1(유저가 입력한 페이지);
