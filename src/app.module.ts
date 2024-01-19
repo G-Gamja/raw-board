@@ -1,5 +1,3 @@
-import { AppController } from './app.controller';
-import { AppService } from './app.service';
 import { AuthenticationModule } from './auth/auth.mudule';
 import { CommentModule } from './comment/comment.module';
 import { KnexModule } from 'nest-knexjs';
@@ -26,7 +24,5 @@ import { UserModule } from './user/user.module';
     AuthenticationModule,
     PostModule,
   ],
-  controllers: [AppController],
-  providers: [AppService],
 })
 export class AppModule {}

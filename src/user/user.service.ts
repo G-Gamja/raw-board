@@ -2,7 +2,6 @@ import { InjectConnection } from 'nest-knexjs';
 import { CreateUserDto } from './dto/create-user.dto';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Knex } from 'knex';
-import { LoginUserDto } from './dto/login-user.dto';
 
 @Injectable()
 export class UserService {
@@ -18,25 +17,6 @@ export class UserService {
       if (response[0].affectedRows === 1) {
         return { data: 'SUCCESS' };
       }
-    } catch (error) {
-      return error;
-    }
-  }
-
-  // NOTE Deprecated
-  async login(loginUserDto: LoginUserDto) {
-    try {
-      const dupe = await this.findOneByEmail(loginUserDto.email);
-
-      if (dupe[0].length === 0) {
-        throw new BadRequestException('존재하지 않는 이메일입니다.');
-      }
-
-      if (dupe[0].password !== loginUserDto.password) {
-        throw new BadRequestException('비밀번호가 일치하지 않습니다.');
-      }
-
-      return { data: 'SUCCESS' };
     } catch (error) {
       return error;
     }
