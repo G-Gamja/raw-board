@@ -48,11 +48,6 @@ export class UserService {
     return { data: aa[0] };
   }
 
-  findOne(id: number) {
-    const a = this.knex('Users').where({ user_id: id });
-    return `This action returns a #${a} user`;
-  }
-
   async findOneById(id: number) {
     const user = await this.knex.raw(`select * from Users where id = '${id}'`);
     if (user[0].length > 0) {
@@ -72,7 +67,8 @@ export class UserService {
     return undefined;
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
-  }
+  // NOTE later
+  // remove(id: number) {
+  //   return `This action removes a #${id} user`;
+  // }
 }

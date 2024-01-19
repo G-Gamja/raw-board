@@ -10,7 +10,7 @@ export class PostService {
 
   async create(createPostDto: CreatePostDto) {
     const aa = await this.knex.raw(
-      `INSERT INTO Users (user_id, title, content) VALUES ('${createPostDto.userId}', '${createPostDto.title}', '${createPostDto.content}')`,
+      `INSERT INTO Users (id, title, content) VALUES ('${createPostDto.userId}', '${createPostDto.title}', '${createPostDto.content}')`,
     );
 
     if (aa[0].affectedRows === 1) {
