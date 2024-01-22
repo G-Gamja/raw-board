@@ -2,6 +2,7 @@ import { InjectConnection } from 'nest-knexjs';
 import { CreateUserDto } from './dto/create-user.dto';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { Knex } from 'knex';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
@@ -10,6 +11,8 @@ export class UserService {
   // NOTE Auth를 안거치는 접근을 어떻게 방지할까?
   async create(createUserDto: CreateUserDto) {
     try {
+      // TODO 이미 삭제된 유저의 이메일은 중복 추가가 안되는 이슈가 있음.
+      // TODO UNIQUE INDEX가 걸려 있어서 그런 것 같음.
       const response = await this.knex.raw(
         `INSERT INTO Users (email, password, username) VALUES ('${createUserDto.email}', '${createUserDto.password}', '${createUserDto.username}')`,
       );
@@ -29,7 +32,10 @@ export class UserService {
   }
 
   async findOneById(id: number) {
-    const user = await this.knex.raw(`select * from Users where id = '${id}'`);
+    // NOTE 삭제된 유저는 배제, SELECT * FROM Users WHERE deleted_at IS NULL;
+    const user = await this.knex.raw(
+      `select * from Users where id = '${id}' AND deleted_at IS NULL`,
+    );
     if (user[0].length > 0) {
       return user[0];
     }
@@ -38,18 +44,35 @@ export class UserService {
 
   async findOneByEmail(email: string) {
     const user = await this.knex.raw(
-      `select * from Users where email = '${email}'`,
+      `select * from Users where email = '${email}' AND deleted_at IS NULL`,
     );
 
     if (user[0].length > 0) {
-      return user[0];
+      return user[0][0];
     }
     return undefined;
   }
 
   // NOTE later
   // NOTE 플래그까지 고려 필요
-  // remove(id: number) {
-  //   return `This action removes a #${id} user`;
-  // }
+  async remove(email: string) {
+    try {
+      const user: User = await this.findOneByEmail(email);
+
+      if (user.is_active === 0) {
+        throw new BadRequestException('이미 탈퇴한 유저입니다.');
+      }
+
+      const response = await this.knex.raw(
+        // NOTE 데이터 실제 삭제는 지양, `DELETE FROM Users WHERE email = '${email}' `,
+        `UPDATE Users SET deleted_at = CURRENT_TIMESTAMP, is_active = 0 WHERE id = '${user.id}'`,
+      );
+
+      if (response[0].affectedRows === 1) {
+        return { data: 'SUCCESS' };
+      }
+    } catch (error) {
+      return error;
+    }
+  }
 }

@@ -28,7 +28,7 @@ export class AuthenticationService {
         registrationData.email,
       );
 
-      if (dupe && dupe?.length > 0) {
+      if (dupe) {
         throw new BadRequestException('이미 존재하는 이메일입니다.');
       }
 
@@ -50,7 +50,7 @@ export class AuthenticationService {
     try {
       const user = await this.usersService.findOneByEmail(email);
 
-      await this.verifyPassword(plainTextPassword, user[0].password);
+      await this.verifyPassword(plainTextPassword, user.password);
       // NOTE 유저에게 password를 보내주지 않는다.
       user[0].password = undefined;
 
