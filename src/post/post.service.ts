@@ -1,16 +1,30 @@
 import { CreatePostDto } from './dto/create-post.dto';
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 // import { UpdatePostDto } from './dto/update-post.dto';
 import { InjectConnection } from 'nest-knexjs';
 import { Knex } from 'knex';
+import { UserService } from 'src/user/user.service';
+import { PaginationQueryDTO } from './dto/pagination';
+import { applyQuery } from 'src/utils/posts';
+import { UpdatePostDto } from './dto/update-post.dto';
+import { Post } from './entities/post.entity';
 
 @Injectable()
 export class PostService {
-  constructor(@InjectConnection() private readonly knex: Knex) {}
+  constructor(
+    private readonly usersService: UserService,
+    @InjectConnection() private readonly knex: Knex,
+  ) {}
 
   async create(createPostDto: CreatePostDto) {
+    const user = await this.usersService.findOneByEmail(createPostDto.email);
+
+    if (!user) {
+      throw new BadRequestException('존재하지 않는 유저입니다.');
+    }
+
     const response = await this.knex.raw(
-      `INSERT INTO Posts (user_id, title, content) VALUES ('${createPostDto.user_id}', '${createPostDto.title}', '${createPostDto.content}')`,
+      `INSERT INTO Posts (user_id, title, content) VALUES ('${user.id}', '${createPostDto.title}', '${createPostDto.content}')`,
     );
 
     if (response[0].affectedRows === 1) {
@@ -19,27 +33,91 @@ export class PostService {
   }
 
   async findAll() {
-    const response = await this.knex.raw('select * from Posts');
+    const response = await this.knex.raw(
+      'select * from Posts where deleted_at IS NULL',
+    );
 
     return { data: response[0] };
   }
 
-  // currentPage: number = 1(유저가 입력한 페이지);
-  // const perPage = 10;
-  //const startIndex = (currentPage - 1) * perPage;
-  // const endIndex = currentPage * perPage;
+  async getAllPostsQuantity() {
+    const response = await this.knex.raw(
+      'select * from Posts where deleted_at IS NULL',
+    );
 
-  // ceil필요할지도?
-  // const paginatedPosts = allPosts.slice(startIndex, endIndex);
-  findOne(id: number) {
-    return `This action returns a #${id} post`;
+    return { data: response[0].length };
   }
 
-  // update(id: number, updatePostDto: UpdatePostDto) {
-  //   return `This action updates a #${id} post`;
-  // }
+  async findOneById(id: number) {
+    // NOTE 삭제된 유저는 배제, SELECT * FROM Users WHERE deleted_at IS NULL;
+    const post = await this.knex.raw(
+      `select * from Posts where id = '${id}' AND deleted_at IS NULL`,
+    );
+    if (post[0].length > 0) {
+      return post[0][0];
+    }
+    throw new BadRequestException('존재하지 않는 게시물입니다.');
+  }
 
-  remove(id: number) {
-    return `This action removes a #${id} post`;
+  async findPostsByEmail(email: string) {
+    const user = await this.usersService.findOneByEmail(email);
+
+    const joinedPosts = await this.knex.raw(
+      `SELECT Users.username, Users.email,Posts.created_at, Posts.title, Posts.content
+      FROM Users
+      JOIN Posts ON Users.id = Posts.user_id
+      WHERE Users.id = '${user.id} AND Posts.deleted_at IS NULL'
+      `,
+    );
+    return {
+      data: joinedPosts[0],
+    };
+  }
+
+  async findPostsWithPagination(query: PaginationQueryDTO) {
+    const posts = await this.findAll();
+
+    const aa = applyQuery(query, posts.data);
+
+    // NOTE localhost:3000/post/page?page=1&isDesc=false
+    return aa;
+  }
+
+  update(id: number, updatePostDto: UpdatePostDto) {
+    const post = this.findOneById(id);
+    if (post) {
+      const response = this.knex.raw(
+        `UPDATE Posts SET title = '${updatePostDto.title}', content = '${updatePostDto.content}', updated_at = CURRENT_TIMESTAMP WHERE id = '${id}'`,
+      );
+
+      if (response[0].affectedRows === 1) {
+        return { data: 'SUCCESS' };
+      }
+    }
+    throw new BadRequestException('존재하지 않는 게시물입니다.');
+  }
+
+  async remove(id: number) {
+    try {
+      const post: Post = await this.findOneById(id);
+
+      if (!post) {
+        throw new BadRequestException('존재하지 않는 게시물입니다.');
+      }
+
+      if (post.is_active === 0 || !!post.deleted_at) {
+        throw new BadRequestException('이미 삭제된 게시물입니다.');
+      }
+
+      const response = await this.knex.raw(
+        `UPDATE Posts SET deleted_at = CURRENT_TIMESTAMP, is_active = 0 WHERE id = '${post.id}'`,
+      );
+
+      if (response[0].affectedRows === 1) {
+        return { data: 'SUCCESS' };
+      }
+    } catch (error) {
+      return error;
+    }
   }
 }

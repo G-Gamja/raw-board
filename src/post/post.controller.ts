@@ -5,12 +5,15 @@ import {
   Body,
   Param,
   Delete,
+  Query,
+  Put,
   // UseGuards,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
+import { PaginationQueryDTO } from './dto/pagination';
+import { UpdatePostDto } from './dto/update-post.dto';
 // import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
-// import { UpdatePostDto } from './dto/update-post.dto';
 
 @Controller('post')
 export class PostController {
@@ -22,24 +25,38 @@ export class PostController {
     return this.postService.create(createPostDto);
   }
 
-  // NOTE ?page 를 쿼리스트링으로 받을 수 있도록 수정
   @Get()
+  findPostsByPage(@Query() query: PaginationQueryDTO) {
+    return this.postService.findPostsWithPagination(query);
+  }
+
+  @Get('all')
   findAll() {
     return this.postService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.postService.findOne(+id);
+  @Get('total')
+  getTotalPostsQuantity() {
+    return this.postService.getAllPostsQuantity();
   }
 
-  // @Patch(':id')
-  // update(@Param('id') id: string, @Body() updatePostDto: UpdatePostDto) {
-  //   return this.postService.update(+id, updatePostDto);
-  // }
+  @Get(':email')
+  findPostsByEmail(@Param('email') email: string) {
+    return this.postService.findPostsByEmail(email);
+  }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.postService.remove(+id);
+  @Get('id/:id')
+  findPostById(@Param('id') id: number) {
+    return this.postService.findOneById(id);
+  }
+
+  @Put('id/:id')
+  update(@Param('id') id: number, @Body() updatePostDto: UpdatePostDto) {
+    return this.postService.update(id, updatePostDto);
+  }
+
+  @Delete('delete/:id')
+  remove(@Param('id') id: number) {
+    return this.postService.remove(id);
   }
 }

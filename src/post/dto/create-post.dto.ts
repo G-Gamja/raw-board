@@ -8,5 +8,5 @@ export class CreatePostDto {
   content: string;
 
   @IsString()
-  user_id: string;
+  email: string;
 }

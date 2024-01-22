@@ -48,7 +48,7 @@ export class UserService {
     );
 
     if (user[0].length > 0) {
-      return user[0][0];
+      return user[0][0] as User;
     }
     return undefined;
   }
@@ -64,7 +64,6 @@ export class UserService {
       }
 
       const response = await this.knex.raw(
-        // NOTE 데이터 실제 삭제는 지양, `DELETE FROM Users WHERE email = '${email}' `,
         `UPDATE Users SET deleted_at = CURRENT_TIMESTAMP, is_active = 0 WHERE id = '${user.id}'`,
       );
 
