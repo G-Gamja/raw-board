@@ -1,13 +1,22 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Put,
+} from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 
-@Controller('comment')
+@Controller('comments')
 export class CommentController {
   constructor(private readonly commentService: CommentService) {}
 
   @Post()
+  // @UseGuards(JwtAuthGuard)
   create(@Body() createCommentDto: CreateCommentDto) {
     return this.commentService.create(createCommentDto);
   }
@@ -17,12 +26,19 @@ export class CommentController {
     return this.commentService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.commentService.findOne(+id);
+  // NOTE 특정 게시물에 달린 댓글들만 가져오기
+  // NOTE localhost:3000/comments/posts/8
+  @Get('posts/:post_id')
+  findCommentsByPostId(@Param('post_id') id: string) {
+    return this.commentService.findCommnetsByPostId(+id);
   }
 
-  @Patch(':id')
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.commentService.findOneById(+id);
+  }
+
+  @Put(':id')
   update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto) {
     return this.commentService.update(+id, updateCommentDto);
   }

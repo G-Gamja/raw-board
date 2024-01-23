@@ -117,7 +117,7 @@ export class PostService {
 
   async remove(id: number) {
     try {
-      const post: Post = await this.findOneById(id);
+      const post = await this.findOneById(id);
 
       if (!post) {
         throw new BadRequestException('존재하지 않는 게시물입니다.');
