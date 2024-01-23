@@ -4,10 +4,11 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectConnection } from 'nest-knexjs';
 import { Knex } from 'knex';
 import { UserService } from 'src/user/user.service';
-import { PaginationQueryDTO } from './dto/pagination';
+import { PaginationQueryDTO } from './dto/pagination.dto';
 import { applyQuery } from 'src/utils/posts';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post } from './entities/post.entity';
+import { PostsQueryDTO } from './dto/query-post.dto';
 
 @Injectable()
 export class PostService {
@@ -59,8 +60,8 @@ export class PostService {
     throw new BadRequestException('존재하지 않는 게시물입니다.');
   }
 
-  async findPostsByEmail(email: string) {
-    const user = await this.usersService.findOneByEmail(email);
+  async findPostsByEmail(query: PostsQueryDTO) {
+    const user = await this.usersService.findOneByEmail(query.email);
 
     const joinedPosts = await this.knex.raw(
       `SELECT Users.username, Users.email,Posts.created_at, Posts.title, Posts.content

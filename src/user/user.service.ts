@@ -50,7 +50,7 @@ export class UserService {
     if (user[0].length > 0) {
       return user[0][0] as User;
     }
-    return undefined;
+    throw new BadRequestException('존재하지 않는 유저입니다.');
   }
 
   // NOTE later

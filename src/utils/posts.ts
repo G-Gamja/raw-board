@@ -1,12 +1,10 @@
-import { PaginationQueryDTO } from 'src/post/dto/pagination';
+import { PaginationQueryDTO } from 'src/post/dto/pagination.dto';
 import { Post } from 'src/post/entities/post.entity';
 
 export const applyQuery = (query: PaginationQueryDTO, posts: Post[]) => {
-  const { page, isDesc = false, perPage = 10 } = query;
+  const { page, isDesc = true, perPage = 10 } = query;
 
-  const sortedPosts = isDesc
-    ? posts.sort((a, b) => a.created_at.getTime() - b.created_at.getTime())
-    : posts;
+  const sortedPosts = sortByDate(posts, isDesc);
 
   const startIndex = (page - 1) * perPage;
   const endIndex = page * perPage;
@@ -14,4 +12,14 @@ export const applyQuery = (query: PaginationQueryDTO, posts: Post[]) => {
   const paginatedPosts = sortedPosts.slice(startIndex, endIndex);
 
   return paginatedPosts;
+};
+
+const sortByDate = (posts: Post[], isDesc: boolean) => {
+  return posts.sort((a, b) => {
+    const aDate = a.updated_at ? a.updated_at : a.created_at;
+    const bDate = b.updated_at ? b.updated_at : b.created_at;
+    return isDesc
+      ? bDate.getTime() - aDate.getTime()
+      : aDate.getTime() - bDate.getTime();
+  });
 };
