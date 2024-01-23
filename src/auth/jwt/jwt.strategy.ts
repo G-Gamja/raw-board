@@ -12,7 +12,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       // secretOrKey: process.env.JWT_SECRET_KEY,
       secretOrKey: 'mysecret',
+      //토큰 만료 기간을 무시할지? false는 만료된 토큰 자체를 거부한다.
       ignoreExpiration: false,
+      //validate함수의 첫 번째 인자로 request 객체 전달 여부를 결정.
+      // passReqToCallback: true,
     });
   }
 
