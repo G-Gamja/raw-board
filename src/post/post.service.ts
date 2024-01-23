@@ -5,7 +5,6 @@ import { InjectConnection } from 'nest-knexjs';
 import { Knex } from 'knex';
 import { UserService } from 'src/user/user.service';
 import { PaginationQueryDTO } from './dto/pagination.dto';
-import { applyQuery } from 'src/utils/posts';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post } from './entities/post.entity';
 import { PostsQueryDTO } from './dto/query-post.dto';
@@ -33,7 +32,7 @@ export class PostService {
     }
   }
 
-  async findAll() {
+  async findAll(): Promise<{ data: Post[] }> {
     const response = await this.knex.raw(
       'select * from Posts where deleted_at IS NULL',
     );
@@ -49,11 +48,12 @@ export class PostService {
     return { data: response[0].length };
   }
 
-  async findOneById(id: number) {
+  async findOneById(id: number): Promise<Post> {
     // NOTE 삭제된 유저는 배제, SELECT * FROM Users WHERE deleted_at IS NULL;
     const post = await this.knex.raw(
       `select * from Posts where id = '${id}' AND deleted_at IS NULL`,
     );
+
     if (post[0].length > 0) {
       return post[0][0];
     }
@@ -76,26 +76,43 @@ export class PostService {
   }
 
   async findPostsWithPagination(query: PaginationQueryDTO) {
+    const { page, isDesc = true, perPage = 10 } = query;
     const posts = await this.findAll();
 
-    const aa = applyQuery(query, posts.data);
+    const sortedPosts = posts.data.sort((a, b) => {
+      const aDate = a.updated_at ? a.updated_at : a.created_at;
+      const bDate = b.updated_at ? b.updated_at : b.created_at;
+      return isDesc
+        ? bDate.getTime() - aDate.getTime()
+        : aDate.getTime() - bDate.getTime();
+    });
 
-    // NOTE localhost:3000/post/page?page=1&isDesc=false
-    return aa;
+    const startIndex = (page - 1) * perPage;
+    const endIndex = page * perPage;
+
+    const paginatedPosts = sortedPosts.slice(startIndex, endIndex);
+
+    return paginatedPosts;
   }
 
-  update(id: number, updatePostDto: UpdatePostDto) {
-    const post = this.findOneById(id);
-    if (post) {
-      const response = this.knex.raw(
-        `UPDATE Posts SET title = '${updatePostDto.title}', content = '${updatePostDto.content}', updated_at = CURRENT_TIMESTAMP WHERE id = '${id}'`,
+  async update(id: number, updatePostDto: UpdatePostDto) {
+    try {
+      const post = await this.findOneById(id);
+
+      if (!post) {
+        throw new BadRequestException('존재하지 않는 게시물입니다.');
+      }
+
+      const response = await this.knex.raw(
+        `UPDATE Posts SET title = '${updatePostDto.title}', content = '${updatePostDto.content}', updated_at = CURRENT_TIMESTAMP where id = '${id}'`,
       );
 
       if (response[0].affectedRows === 1) {
         return { data: 'SUCCESS' };
       }
+    } catch (error) {
+      return error;
     }
-    throw new BadRequestException('존재하지 않는 게시물입니다.');
   }
 
   async remove(id: number) {

@@ -32,7 +32,7 @@ export class PostController {
   }
 
   // NOTE findPostsByPage에 쿼리가 아무것도 안들어갔을때 이거 실행시키도록
-  @Get()
+  @Get('all')
   findAll() {
     return this.postService.findAll();
   }
