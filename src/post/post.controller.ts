@@ -7,13 +7,13 @@ import {
   Delete,
   Query,
   Put,
-  // UseGuards,
+  UseGuards,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PaginationQueryDTO } from './dto/pagination';
 import { UpdatePostDto } from './dto/update-post.dto';
-// import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
+import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 
 @Controller('post')
 export class PostController {
@@ -30,12 +30,14 @@ export class PostController {
     return this.postService.findPostsWithPagination(query);
   }
 
+  // FIXME 패스 라우트가 all,total 맥락이 중첩되어 보임
   @Get('all')
   findAll() {
     return this.postService.findAll();
   }
 
   @Get('total')
+  @UseGuards(JwtAuthGuard)
   getTotalPostsQuantity() {
     return this.postService.getAllPostsQuantity();
   }

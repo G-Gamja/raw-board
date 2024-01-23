@@ -51,8 +51,8 @@ export class AuthenticationService {
       const user = await this.usersService.findOneByEmail(email);
 
       await this.verifyPassword(plainTextPassword, user.password);
-      // NOTE 유저에게 password를 보내주지 않는다.
-      user[0].password = undefined;
+
+      user.password = undefined;
 
       return user;
     } catch (error) {
@@ -83,6 +83,8 @@ export class AuthenticationService {
   public getCookieWithJwtToken(userId: number) {
     const payload: TokenPayload = { userId };
     const token = this.jwtService.sign(payload);
+    // FIXME 로컬 환경에서 인증이 안되는 거면 앞에 Bearer를 붙여줘야 할 수 있음
+    // return `Authentication=Bearer ${token}; HttpOnly; Path=/; Max-Age=300s`;
     return `Authentication=${token}; HttpOnly; Path=/; Max-Age=300s`;
   }
 
