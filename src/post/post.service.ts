@@ -1,9 +1,7 @@
 import { CreatePostDto } from './dto/create-post.dto';
 import { BadRequestException, Injectable } from '@nestjs/common';
-// import { UpdatePostDto } from './dto/update-post.dto';
 import { InjectConnection } from 'nest-knexjs';
 import { Knex } from 'knex';
-import { UserService } from 'src/user/user.service';
 import { PaginationQueryDTO } from './dto/pagination.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post } from './entities/post.entity';
@@ -11,10 +9,7 @@ import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class PostService {
-  constructor(
-    private readonly usersService: UserService,
-    @InjectConnection() private readonly knex: Knex,
-  ) {}
+  constructor(@InjectConnection() private readonly knex: Knex) {}
 
   async create(user: User, createPostDto: CreatePostDto) {
     if (!user) {
@@ -71,24 +66,21 @@ export class PostService {
   }
 
   async findPostsWithPagination(query: PaginationQueryDTO) {
-    const { page, isDesc = true, perPage = 10 } = query;
-    // TODO 쿼리문으로 페이징 구현하기
-    const posts = await this.findAll();
+    const { page, isDesc, perPage = 10 } = query;
 
-    const sortedPosts = posts.data.sort((a, b) => {
-      const aDate = a.updated_at ? a.updated_at : a.created_at;
-      const bDate = b.updated_at ? b.updated_at : b.created_at;
-      return isDesc
-        ? bDate.getTime() - aDate.getTime()
-        : aDate.getTime() - bDate.getTime();
-    });
-
-    const startIndex = (page - 1) * perPage;
-    const endIndex = page * perPage;
-
-    const paginatedPosts = sortedPosts.slice(startIndex, endIndex);
-
-    return paginatedPosts;
+    const joinedPosts = await this.knex.raw(
+      `SELECT Posts.*, Users.username, Users.email
+      FROM Posts
+      LEFT JOIN Users ON Posts.user_id = Users.id
+      WHERE Posts.deleted_at IS NULL
+      ORDER BY
+        COALESCE(Posts.updated_at, Posts.created_at) 
+        ${isDesc ? 'DESC' : 'ASC'}
+        LIMIT ${perPage} OFFSET ${(page - 1) * perPage}`,
+    );
+    return {
+      data: joinedPosts[0],
+    };
   }
 
   async update(id: number, updatePostDto: UpdatePostDto) {
