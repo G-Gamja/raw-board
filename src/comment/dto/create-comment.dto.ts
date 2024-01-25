@@ -6,7 +6,4 @@ export class CreateCommentDto {
 
   @IsString()
   content: string;
-
-  @IsString()
-  email: string;
 }

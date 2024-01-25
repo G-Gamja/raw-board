@@ -3,26 +3,23 @@ import { BadRequestException, Injectable } from '@nestjs/common';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { InjectConnection } from 'nest-knexjs';
 import { Knex } from 'knex';
-import { UserService } from 'src/user/user.service';
 import { PostService } from 'src/post/post.service';
 import { Comment } from './entities/comment.entity';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class CommentService {
   constructor(
-    private readonly usersService: UserService,
     private readonly postsService: PostService,
     @InjectConnection() private readonly knex: Knex,
   ) {}
 
-  async create(createCommentDto: CreateCommentDto) {
+  async create(user: User, createCommentDto: CreateCommentDto) {
     const post = await this.postsService.findOneById(createCommentDto.post_id);
 
     if (!post) {
       throw new BadRequestException('존재하지 않는 게시물입니다.');
     }
-
-    const user = await this.usersService.findOneByEmail(createCommentDto.email);
 
     if (!user) {
       throw new BadRequestException('존재하지 않는 유저입니다.');
@@ -38,11 +35,6 @@ export class CommentService {
   }
 
   async findAll() {
-    // const response = await this.knex.raw(
-    //   'select * from Comments where deleted_at IS NULL',
-    // );
-
-    // return { data: response[0] };
     const joinedPosts = await this.knex.raw(
       `SELECT Comments.id, Comments.content AS commment_content, Comments.created_at, Comments.updated_at, Comments.deleted_at, Posts.title,Posts.content AS post_content ,Users.email,Posts.id AS post_id
       FROM Comments
@@ -61,7 +53,7 @@ export class CommentService {
 
   async findCommnetsByPostId(id: number) {
     const joinedComments = await this.knex.raw(
-      `SELECT Comments.id, Comments.content AS commment_content, Comments.created_at, Comments.updated_at, Comments.deleted_at, Posts.title,Posts.content AS post_content ,Users.email, Posts.id AS post_id
+      `SELECT Comments.id, Comments.content AS commment_content, Comments.created_at, Comments.updated_at, Comments.deleted_at, Posts.title,Posts.content AS post_content ,Users.email, Users.username,Posts.id AS post_id
       FROM Comments
       JOIN Posts ON Comments.post_id = Posts.id
       JOIN Users ON Comments.user_id = Users.id
@@ -100,8 +92,6 @@ export class CommentService {
         return { data: 'SUCCESS' };
       }
     } catch (error) {
-      console.log('🚀 ~ CommentService ~ update ~ error:', error);
-
       return error;
     }
   }
