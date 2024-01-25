@@ -14,7 +14,7 @@ import { UserModule } from 'src/user/user.module';
     // NOTE @nestjs/confing 설정 혹은 dotenv로 설정가능
     JwtModule.register({
       secret: 'mysecret',
-      signOptions: { expiresIn: '300s' },
+      signOptions: { expiresIn: '3000s' },
     }),
   ],
   providers: [AuthenticationService, LocalStrategy, JwtStrategy],

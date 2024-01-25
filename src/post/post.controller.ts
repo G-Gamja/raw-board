@@ -8,22 +8,25 @@ import {
   Query,
   Put,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { PaginationQueryDTO } from './dto/pagination.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
-import { PostsQueryDTO } from './dto/query-post.dto';
-
+import RequestWithUser from 'src/auth/interface/requestWithUser.interface';
 @Controller('posts')
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
   @Post()
-  // @UseGuards(JwtAuthGuard)
-  create(@Body() createPostDto: CreatePostDto) {
-    return this.postService.create(createPostDto);
+  @UseGuards(JwtAuthGuard)
+  create(
+    @Req() request: RequestWithUser,
+    @Body() createPostDto: CreatePostDto,
+  ) {
+    return this.postService.create(request.user, createPostDto);
   }
 
   @Get()
@@ -31,21 +34,11 @@ export class PostController {
     return this.postService.findPostsWithPagination(query);
   }
 
-  // NOTE findPostsByPage에 쿼리가 아무것도 안들어갔을때 이거 실행시키도록
-  @Get('all')
-  findAll() {
-    return this.postService.findAll();
-  }
-
-  @Get('counts')
+  // NOTE 내가 작성한 게시물 전체 가져오기
+  @Get('my')
   @UseGuards(JwtAuthGuard)
-  getTotalPostsQuantity() {
-    return this.postService.getAllPostsQuantity();
-  }
-
-  @Get('email')
-  findPostsByEmail(@Query() query: PostsQueryDTO) {
-    return this.postService.findPostsByEmail(query);
+  findPostsByEmail(@Req() request: RequestWithUser) {
+    return this.postService.findPostsByEmail(request.user);
   }
 
   @Get('id/:id')

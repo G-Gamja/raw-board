@@ -7,7 +7,7 @@ import { UserService } from 'src/user/user.service';
 import { PaginationQueryDTO } from './dto/pagination.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Post } from './entities/post.entity';
-import { PostsQueryDTO } from './dto/query-post.dto';
+import { User } from 'src/user/entities/user.entity';
 
 @Injectable()
 export class PostService {
@@ -16,9 +16,7 @@ export class PostService {
     @InjectConnection() private readonly knex: Knex,
   ) {}
 
-  async create(createPostDto: CreatePostDto) {
-    const user = await this.usersService.findOneByEmail(createPostDto.email);
-
+  async create(user: User, createPostDto: CreatePostDto) {
     if (!user) {
       throw new BadRequestException('존재하지 않는 유저입니다.');
     }
@@ -49,7 +47,6 @@ export class PostService {
   }
 
   async findOneById(id: number): Promise<Post> {
-    // NOTE 삭제된 유저는 배제, SELECT * FROM Users WHERE deleted_at IS NULL;
     const post = await this.knex.raw(
       `select * from Posts where id = '${id}' AND deleted_at IS NULL`,
     );
@@ -60,11 +57,9 @@ export class PostService {
     throw new BadRequestException('존재하지 않는 게시물입니다.');
   }
 
-  async findPostsByEmail(query: PostsQueryDTO) {
-    const user = await this.usersService.findOneByEmail(query.email);
-
+  async findPostsByEmail(user: User) {
     const joinedPosts = await this.knex.raw(
-      `SELECT Users.username, Users.email,Posts.created_at, Posts.title, Posts.content
+      `SELECT Users.username, Users.email,Posts.created_at, Posts.title, Posts.content, Posts.id, Posts.updated_at
       FROM Users
       JOIN Posts ON Users.id = Posts.user_id
       WHERE Users.id = '${user.id} AND Posts.deleted_at IS NULL'
@@ -77,6 +72,7 @@ export class PostService {
 
   async findPostsWithPagination(query: PaginationQueryDTO) {
     const { page, isDesc = true, perPage = 10 } = query;
+    // TODO 쿼리문으로 페이징 구현하기
     const posts = await this.findAll();
 
     const sortedPosts = posts.data.sort((a, b) => {

@@ -56,6 +56,9 @@ export class CommentService {
     };
   }
 
+  // NOTE 한 도메인으로 프론트,api 구현 (api 서비스 홈페이지처럼), 프론트는 넥스트 !!같은 도메인, 다른 레포로 구성, 프록시 서버로 엔진엑스 사용(옵션)
+  // 도시 익스텐션 디버깅(wallets add할 수 있게 인터페이스 맞추기), api 서비스 로컬에서 구현해보기.
+
   async findCommnetsByPostId(id: number) {
     const joinedComments = await this.knex.raw(
       `SELECT Comments.id, Comments.content AS commment_content, Comments.created_at, Comments.updated_at, Comments.deleted_at, Posts.title,Posts.content AS post_content ,Users.email, Posts.id AS post_id
