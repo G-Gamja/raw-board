@@ -27,7 +27,7 @@ export class PostService {
 
   async findAll(): Promise<{ data: Post[] }> {
     const response = await this.knex.raw(
-      'select * from Posts where deleted_at IS NULL',
+      'SELECT * from Posts WHERE deleted_at IS NULL',
     );
 
     return { data: response[0] };
@@ -35,7 +35,7 @@ export class PostService {
 
   async getAllPostsQuantity() {
     const response = await this.knex.raw(
-      'select * from Posts where deleted_at IS NULL',
+      'SELECT * from Posts WHERE deleted_at IS NULL',
     );
 
     return { data: response[0].length };
@@ -43,7 +43,7 @@ export class PostService {
 
   async findOneById(id: number): Promise<Post> {
     const post = await this.knex.raw(
-      `select * from Posts where id = '${id}' AND deleted_at IS NULL`,
+      `SELECT * from Posts WHERE id = '${id}' AND deleted_at IS NULL`,
     );
 
     if (post[0].length > 0) {
@@ -92,7 +92,7 @@ export class PostService {
       }
 
       const response = await this.knex.raw(
-        `UPDATE Posts SET title = '${updatePostDto.title}', content = '${updatePostDto.content}', updated_at = CURRENT_TIMESTAMP where id = '${id}'`,
+        `UPDATE Posts SET title = '${updatePostDto.title}', content = '${updatePostDto.content}', updated_at = CURRENT_TIMESTAMP WHERE id = '${id}'`,
       );
 
       if (response[0].affectedRows === 1) {
