@@ -8,12 +8,14 @@ import {
   Put,
   UseGuards,
   Req,
+  Query,
 } from '@nestjs/common';
 import { CommentService } from './comment.service';
 import { CreateCommentDto } from './dto/create-comment.dto';
 import { UpdateCommentDto } from './dto/update-comment.dto';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import RequestWithUser from 'src/auth/interface/requestWithUser.interface';
+import { CommentsQueryDTO } from './dto/query-comments.dts';
 
 @Controller('comments')
 export class CommentController {
@@ -29,26 +31,21 @@ export class CommentController {
   }
 
   @Get()
-  findAll() {
-    return this.commentService.findAll();
+  findCommentsByQuery(@Query() query: CommentsQueryDTO) {
+    return this.commentService.findCommentsWithQuery(query);
   }
 
-  @Get('posts/:post_id')
-  findCommentsByPostId(@Param('post_id') id: string) {
-    return this.commentService.findCommnetsByPostId(+id);
-  }
-
-  @Get(':id')
+  @Get('id/:id')
   findOne(@Param('id') id: string) {
     return this.commentService.findOneById(+id);
   }
 
-  @Put(':id')
+  @Put('id/:id')
   update(@Param('id') id: string, @Body() updateCommentDto: UpdateCommentDto) {
     return this.commentService.update(+id, updateCommentDto);
   }
 
-  @Delete(':id')
+  @Delete('id/:id')
   remove(@Param('id') id: string) {
     return this.commentService.remove(+id);
   }

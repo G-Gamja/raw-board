@@ -10,7 +10,12 @@ import { UserService } from 'src/user/user.service';
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly userService: UserService) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: ExtractJwt.fromExtractors([
+        (request) => {
+          return request?.cookies?.Authorization;
+        },
+      ]),
+
       // secretOrKey: process.env.JWT_SECRET_KEY,
       secretOrKey: 'mysecret',
       //토큰 만료 기간을 무시할지? false는 만료된 토큰 자체를 거부한다.

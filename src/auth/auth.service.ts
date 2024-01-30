@@ -85,10 +85,10 @@ export class AuthenticationService {
     const token = this.jwtService.sign(payload);
     // FIXME 로컬 환경에서 인증이 안되는 거면 앞에 Bearer를 붙여줘야 할 수 있음
     // return `Authentication=Bearer ${token}; HttpOnly; Path=/; Max-Age=300s`;
-    return `Authentication= Bearer ${token}; HttpOnly; Path=/; Max-Age=3000s`;
+    return `Authorization=${token}; HttpOnly; Path=/; Max-Age=3000s`;
   }
 
   public getCookieForLogOut() {
-    return `Authentication=; HttpOnly; Path=/; Max-Age=0`;
+    return `Authorization=; HttpOnly; Path=/; Max-Age=0`;
   }
 }

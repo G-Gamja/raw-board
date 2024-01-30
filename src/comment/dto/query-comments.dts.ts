@@ -1,10 +1,10 @@
-import { IsBoolean, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNumber, IsOptional } from 'class-validator';
 import { Transform, Type } from 'class-transformer';
 
-export class PaginationQueryDTO {
+export class CommentsQueryDTO {
   @IsNumber()
   @Type(() => Number)
-  page: number;
+  post_id: number;
 
   // FIXME 개선필요
   @Transform((value) => {
@@ -15,13 +15,4 @@ export class PaginationQueryDTO {
   // @Transform((param) => Boolean(param.value))
   @IsOptional()
   isDesc?: boolean;
-
-  @IsNumber()
-  @Type(() => Number)
-  @IsOptional()
-  perPage: number;
-
-  @IsString()
-  @IsOptional()
-  keyword: string;
 }

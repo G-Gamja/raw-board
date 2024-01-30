@@ -16,6 +16,7 @@ import { PaginationQueryDTO } from './dto/pagination.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { JwtAuthGuard } from 'src/auth/jwt/jwt.guard';
 import RequestWithUser from 'src/auth/interface/requestWithUser.interface';
+
 @Controller('posts')
 export class PostController {
   constructor(private readonly postService: PostService) {}
@@ -34,7 +35,6 @@ export class PostController {
     return this.postService.findPostsWithPagination(query);
   }
 
-  // NOTE 내가 작성한 게시물 전체 가져오기
   @Get('my')
   @UseGuards(JwtAuthGuard)
   findPostsByEmail(@Req() request: RequestWithUser) {
@@ -47,12 +47,18 @@ export class PostController {
   }
 
   @Put('id/:id')
-  update(@Param('id') id: number, @Body() updatePostDto: UpdatePostDto) {
-    return this.postService.update(id, updatePostDto);
+  @UseGuards(JwtAuthGuard)
+  update(
+    @Req() request: RequestWithUser,
+    @Param('id') id: number,
+    @Body() updatePostDto: UpdatePostDto,
+  ) {
+    return this.postService.update(request.user, id, updatePostDto);
   }
 
   @Delete('id/:id')
-  remove(@Param('id') id: number) {
-    return this.postService.remove(id);
+  @UseGuards(JwtAuthGuard)
+  remove(@Req() request: RequestWithUser, @Param('id') id: number) {
+    return this.postService.remove(request.user, id);
   }
 }

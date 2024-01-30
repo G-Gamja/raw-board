@@ -66,13 +66,18 @@ export class PostService {
   }
 
   async findPostsWithPagination(query: PaginationQueryDTO) {
-    const { page, isDesc, perPage = 10 } = query;
+    const { page, isDesc, perPage = 10, keyword } = query;
+
+    const keywordQuery = keyword
+      ? `AND (Posts.title LIKE '%${keyword}%' OR Posts.content LIKE '%${keyword}%')`
+      : '';
 
     const joinedPosts = await this.knex.raw(
       `SELECT Posts.*, Users.username, Users.email
       FROM Posts
       LEFT JOIN Users ON Posts.user_id = Users.id
       WHERE Posts.deleted_at IS NULL
+      ${keywordQuery}
       ORDER BY
         COALESCE(Posts.updated_at, Posts.created_at) 
         ${isDesc ? 'DESC' : 'ASC'}
@@ -83,9 +88,13 @@ export class PostService {
     };
   }
 
-  async update(id: number, updatePostDto: UpdatePostDto) {
+  async update(user: User, id: number, updatePostDto: UpdatePostDto) {
     try {
       const post = await this.findOneById(id);
+
+      if (user.id !== post.user_id) {
+        throw new BadRequestException('권한이 없습니다.');
+      }
 
       if (!post) {
         throw new BadRequestException('존재하지 않는 게시물입니다.');
@@ -103,9 +112,13 @@ export class PostService {
     }
   }
 
-  async remove(id: number) {
+  async remove(user: User, id: number) {
     try {
       const post = await this.findOneById(id);
+
+      if (user.id !== post.user_id) {
+        throw new BadRequestException('권한이 없습니다.');
+      }
 
       if (!post) {
         throw new BadRequestException('존재하지 않는 게시물입니다.');
