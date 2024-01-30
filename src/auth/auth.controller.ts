@@ -48,7 +48,9 @@ export class AuthenticationController {
     // });
 
     user.password = undefined;
-    return response.send(user);
+    return response.send({
+      data: 'SUCCESS',
+    });
   }
   // TODO 프론트는 정렬기능도 추가.
   @UseGuards(JwtAuthGuard)
