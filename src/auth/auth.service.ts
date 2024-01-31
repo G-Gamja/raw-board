@@ -40,7 +40,10 @@ export class AuthenticationService {
 
       createdUser.password = undefined;
 
-      return createdUser;
+      // return createdUser;
+      return {
+        data: 'SUCCESS',
+      };
     } catch (error) {
       return error;
     }

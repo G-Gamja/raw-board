@@ -54,10 +54,10 @@ export class PostService {
 
   async findPostsByEmail(user: User) {
     const joinedPosts = await this.knex.raw(
-      `SELECT Users.username, Users.email,Posts.created_at, Posts.title, Posts.content, Posts.id, Posts.updated_at
+      `SELECT Users.username, Users.email,Posts.created_at, Posts.title, Posts.content, Posts.id, Posts.updated_at,Posts.deleted_at
       FROM Users
       JOIN Posts ON Users.id = Posts.user_id
-      WHERE Users.id = '${user.id} AND Posts.deleted_at IS NULL'
+      WHERE Users.id = '${user.id}' AND Posts.deleted_at IS NULL
       `,
     );
     return {
@@ -117,7 +117,7 @@ export class PostService {
       const post = await this.findOneById(id);
 
       if (user.id !== post.user_id) {
-        throw new BadRequestException('권한이 없습니다.');
+        throw new BadRequestException('권한이 없습니다.!');
       }
 
       if (!post) {
@@ -136,7 +136,7 @@ export class PostService {
         return { data: 'SUCCESS' };
       }
     } catch (error) {
-      return error;
+      throw error;
     }
   }
 }

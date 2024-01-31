@@ -52,7 +52,7 @@ export class AuthenticationController {
       data: 'SUCCESS',
     });
   }
-  // TODO 프론트는 정렬기능도 추가.
+
   @UseGuards(JwtAuthGuard)
   @Post('log-out')
   async logOut(@Res() response: Response) {
@@ -60,7 +60,9 @@ export class AuthenticationController {
       'Set-Cookie',
       this.authenticationService.getCookieForLogOut(),
     );
-    return response.sendStatus(200);
+    return response.send({
+      data: 'SUCCESS',
+    });
   }
 
   @UseGuards(JwtAuthGuard)
