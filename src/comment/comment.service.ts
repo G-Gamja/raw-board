@@ -57,7 +57,7 @@ export class CommentService {
       FROM Comments
       JOIN Posts ON Comments.post_id = Posts.id
       JOIN Users ON Comments.user_id = Users.id
-      WHERE Comments.deleted_at IS NULL
+      WHERE Comments.deleted_at IS NULL AND Users.deleted_at IS NULL
       AND Posts.id = ${post_id} 
       ORDER BY
         COALESCE(Comments.updated_at, Comments.created_at) 
@@ -100,9 +100,13 @@ export class CommentService {
     }
   }
 
-  async remove(id: number) {
+  async remove(user: User, id: number) {
     try {
       const comment = await this.findOneById(id);
+
+      if (user.id !== comment.user_id) {
+        throw new BadRequestException('권한이 없습니다.!');
+      }
 
       if (!comment) {
         throw new BadRequestException('존재하지 않는 댓글입니다.');
@@ -120,7 +124,7 @@ export class CommentService {
         return { data: 'SUCCESS' };
       }
     } catch (error) {
-      return error;
+      throw error;
     }
   }
 }

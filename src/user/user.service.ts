@@ -32,7 +32,6 @@ export class UserService {
   }
 
   async findOneById(id: number) {
-    // NOTE 삭제된 유저는 배제, SELECT * FROM Users WHERE deleted_at IS NULL;
     const user = await this.knex.raw(
       `select * from Users where id = '${id}' AND deleted_at IS NULL`,
     );
@@ -44,7 +43,7 @@ export class UserService {
 
   async findOneByEmail(email: string) {
     const user = await this.knex.raw(
-      `select * from Users where email = '${email}' AND deleted_at IS NULL`,
+      `SELECT * from Users WHERE email = '${email}' AND deleted_at IS NULL`,
     );
 
     if (user[0].length > 0) {
@@ -53,18 +52,14 @@ export class UserService {
     return null;
   }
 
-  // NOTE later
-  // NOTE 플래그까지 고려 필요
-  async remove(email: string) {
+  async remove(user: User) {
     try {
-      const user: User = await this.findOneByEmail(email);
-
       if (user.is_active === 0) {
         throw new BadRequestException('이미 탈퇴한 유저입니다.');
       }
 
       const response = await this.knex.raw(
-        `UPDATE Users SET deleted_at = CURRENT_TIMESTAMP, is_active = 0 WHERE id = '${user.id}'`,
+        `UPDATE Users SET email = CONCAT('${user.email}', '_deleted_', NOW()), deleted_at = CURRENT_TIMESTAMP, is_active = 0 WHERE id = '${user.id}'`,
       );
 
       if (response[0].affectedRows === 1) {

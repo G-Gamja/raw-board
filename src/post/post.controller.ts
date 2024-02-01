@@ -37,8 +37,8 @@ export class PostController {
 
   @Get('my')
   @UseGuards(JwtAuthGuard)
-  findPostsByEmail(@Req() request: RequestWithUser) {
-    return this.postService.findPostsByEmail(request.user);
+  findOwnedPostsByUser(@Req() request: RequestWithUser) {
+    return this.postService.findPostsByUser(request.user);
   }
 
   @Get('id/:id')

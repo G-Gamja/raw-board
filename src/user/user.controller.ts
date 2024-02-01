@@ -4,7 +4,6 @@ import {
   Post,
   Body,
   Param,
-  Delete,
   UseGuards,
   Req,
 } from '@nestjs/common';
@@ -36,12 +35,6 @@ export class UserController {
   @Get('email/:email')
   findByEmail(@Param('email') email: string) {
     return this.userService.findOneByEmail(email);
-  }
-
-  // NOTE later
-  @Delete(':email')
-  remove(@Param('email') email: string) {
-    return this.userService.remove(email);
   }
 
   // NOTE later

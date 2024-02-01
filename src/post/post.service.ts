@@ -25,22 +25,6 @@ export class PostService {
     }
   }
 
-  async findAll(): Promise<{ data: Post[] }> {
-    const response = await this.knex.raw(
-      'SELECT * from Posts WHERE deleted_at IS NULL',
-    );
-
-    return { data: response[0] };
-  }
-
-  async getAllPostsQuantity() {
-    const response = await this.knex.raw(
-      'SELECT * from Posts WHERE deleted_at IS NULL',
-    );
-
-    return { data: response[0].length };
-  }
-
   async findOneById(id: number): Promise<Post> {
     const post = await this.knex.raw(
       `SELECT * from Posts WHERE id = '${id}' AND deleted_at IS NULL`,
@@ -52,7 +36,7 @@ export class PostService {
     throw new BadRequestException('존재하지 않는 게시물입니다.');
   }
 
-  async findPostsByEmail(user: User) {
+  async findPostsByUser(user: User) {
     const joinedPosts = await this.knex.raw(
       `SELECT Users.username, Users.email,Posts.created_at, Posts.title, Posts.content, Posts.id, Posts.updated_at,Posts.deleted_at
       FROM Users
@@ -76,7 +60,7 @@ export class PostService {
       `SELECT Posts.*, Users.username, Users.email
       FROM Posts
       LEFT JOIN Users ON Posts.user_id = Users.id
-      WHERE Posts.deleted_at IS NULL
+      WHERE Posts.deleted_at IS NULL AND Users.deleted_at IS NULL
       ${keywordQuery}
       ORDER BY
         COALESCE(Posts.updated_at, Posts.created_at) 

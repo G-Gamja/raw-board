@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Post,
   Req,
@@ -56,6 +57,23 @@ export class AuthenticationController {
   @UseGuards(JwtAuthGuard)
   @Post('log-out')
   async logOut(@Res() response: Response) {
+    response.setHeader(
+      'Set-Cookie',
+      this.authenticationService.getCookieForLogOut(),
+    );
+    return response.send({
+      data: 'SUCCESS',
+    });
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete('withdraw-membership')
+  async withdrawMembership(
+    @Req() request: RequestWithUser,
+    @Res() response: Response,
+  ) {
+    await this.authenticationService.withdrawMembership(request.user);
+
     response.setHeader(
       'Set-Cookie',
       this.authenticationService.getCookieForLogOut(),
