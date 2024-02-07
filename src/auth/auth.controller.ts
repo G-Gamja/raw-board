@@ -34,8 +34,6 @@ export class AuthenticationController {
   // NOTE => passport미들웨어에서 user데이터를 넘겨주는데 이 데이터가 request객체에 담겨서 넘어온다
   async logIn(@Req() request: RequestWithUser, @Res() response: Response) {
     const user = request.user;
-    // NOTE RequestWithUser대신에 그냥 Request로 쓰되 request.body로 접근하시면 된다
-
     const cookie = this.authenticationService.getCookieWithJwtToken(user.id);
 
     // TODO 갱신전략 고려하기> 추후에
