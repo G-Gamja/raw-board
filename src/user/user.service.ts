@@ -11,8 +11,6 @@ export class UserService {
   // NOTE Auth를 안거치는 접근을 어떻게 방지할까?
   async create(createUserDto: CreateUserDto) {
     try {
-      // TODO 이미 삭제된 유저의 이메일은 중복 추가가 안되는 이슈가 있음.
-      // TODO UNIQUE INDEX가 걸려 있어서 그런 것 같음.
       const response = await this.knex.raw(
         `INSERT INTO Users (email, password, username) VALUES ('${createUserDto.email}', '${createUserDto.password}', '${createUserDto.username}')`,
       );
